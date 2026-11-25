@@ -1,0 +1,249 @@
+.registry-shell .admin-content {
+  min-width: 0;
+}
+
+.registry-nav {
+  align-items: stretch;
+}
+
+.registry-nav > button {
+  min-height: 44px;
+}
+
+.registry-nav > button:hover {
+  background: #234a40;
+  color: white;
+}
+
+.registry-note {
+  margin: 0 0 20px;
+  padding: 10px 14px;
+  border-left: 3px solid #ad7650;
+  background: #ebe5d8;
+  color: #493a2e;
+  font-size: 0.875rem;
+}
+
+.registry-tools {
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.registry-tools > select {
+  min-height: 44px;
+}
+
+.registry-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: baseline;
+  margin-bottom: 10px;
+  font-size: 0.875rem;
+}
+
+.registry-count {
+  color: #52645c;
+}
+
+.registry-notice {
+  color: #21593c;
+  font-weight: 700;
+}
+
+.registry-table-wrap {
+  overflow: auto;
+}
+
+.registry-table {
+  border-collapse: collapse;
+  min-width: 640px;
+  width: 100%;
+  font-size: 0.875rem;
+  text-align: left;
+}
+
+.registry-table thead {
+  background: #eeeae0;
+  color: #42564d;
+}
+
+.registry-table th,
+.registry-table td {
+  padding: 14px;
+  vertical-align: middle;
+  overflow-wrap: anywhere;
+}
+
+.registry-table tbody tr + tr {
+  border-top: 1px solid #e8e2d5;
+}
+
+.registry-table tbody th {
+  font-weight: 700;
+}
+
+.registry-table tbody th small {
+  display: block;
+  color: #52645c;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.registry-table .status {
+  white-space: nowrap;
+}
+
+.registry-actions button {
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  min-height: 36px;
+  padding: 0 8px;
+  color: #843e29;
+  font-weight: 700;
+  text-align: left;
+}
+
+.registry-actions button:hover {
+  background: #f4ede5;
+  text-decoration: underline;
+}
+
+.registry-dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  margin: 0;
+  border: 0;
+  color: var(--ink);
+  height: 100%;
+  max-height: 100%;
+}
+
+.registry-dialog::backdrop {
+  background: rgba(6, 25, 20, 0.68);
+}
+
+.registry-dialog .registry-close {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.registry-dialog .primary,
+.registry-shell .primary {
+  background: #963f29;
+  border-color: #963f29;
+}
+
+.registry-dialog .primary:hover,
+.registry-shell .primary:hover {
+  background: #78321f;
+}
+
+.registry-dialog label,
+.registry-dialog legend {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.registry-dialog textarea {
+  width: 100%;
+  display: block;
+  padding: 10px 12px;
+  border: 1px solid #d6d1c6;
+  background: white;
+  margin-top: 7px;
+}
+
+.registry-dialog textarea:focus-visible {
+  outline: 2px solid #a74d34;
+  outline-offset: 3px;
+}
+
+.registry-dialog .registry-form-note,
+.zone-choices > p {
+  color: #52645c;
+  font-size: 0.875rem;
+}
+
+.registry-dialog .registry-error {
+  color: #812619;
+  font-weight: 700;
+  margin-block: 8px;
+}
+
+.zone-choices {
+  min-width: 0;
+  border: 1px solid #d6d1c6;
+  padding: 10px 12px 12px;
+}
+
+.zone-choices > label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 36px;
+  font-weight: 400;
+}
+
+.zone-choices > label > input {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.zone-choices strong {
+  margin-left: auto;
+  color: #52645c;
+  font-size: 0.75rem;
+}
+
+.registry-details {
+  margin: 20px 0;
+}
+
+.registry-details > div {
+  padding: 12px 0;
+  border-top: 1px solid #ddd8cd;
+}
+
+.registry-details dt {
+  color: #52645c;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.registry-details dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .registry-shell .registry-nav {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 12px;
+  }
+
+  .registry-nav > .admin-title,
+  .registry-nav > p {
+    display: none;
+  }
+
+  .registry-nav > button {
+    padding: 8px 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .registry-dialog {
+    width: 100%;
+    padding: 26px 20px;
+  }
+
+  .registry-dialog .form-actions {
+    flex-wrap: wrap;
+  }
+}
