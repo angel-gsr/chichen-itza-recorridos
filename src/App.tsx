@@ -3,8 +3,10 @@ import AdminPanel from "./AdminPanel";
 import { normalizeSearch, useAdminCatalog, useRegistry } from "./adminData";
 import type { Role, Tour, Zone } from "./tourData";
 import { useModalDialog } from "./useModalDialog";
+import { zonePhotos } from "./zonePhotos";
 
 type View = "inicio" | "catalogo" | "panel" | "recorrido" | "guia" | "admin";
+type Modality = "Todos" | Tour["type"];
 type Progress = { lastZone: string; visited: string[] };
 type ProgressByTour = Record<string, Progress>;
 
@@ -104,10 +106,18 @@ function Header({ view, navigate, role, changeRole }: { view: View; navigate: (v
   );
 }
 
+function ZoneImage({ zoneId, priority = false }: { zoneId: string; priority?: boolean }) {
+  const photo = zonePhotos[zoneId];
+  return photo ? (
+    <img className="zone-image" src={photo.src} alt={photo.alt} loading={priority ? "eager" : "lazy"} fetchPriority={priority ? "high" : undefined} decoding="async" />
+  ) : null;
+}
+
 function TourCard({ tour, onOpen }: { tour: Tour; onOpen: () => void }) {
   return (
     <article className="tour-card">
-      <div className="tour-image" style={{ backgroundImage: "url('/chichen-hero.png')" }}>
+      <div className="tour-image">
+        <ZoneImage zoneId={tour.zoneIds[0]} />
         <span className={"pill " + (tour.type === "Individual" ? "light" : "terra")}>{tour.type}</span>
       </div>
       <div className="tour-body">
@@ -120,21 +130,21 @@ function TourCard({ tour, onOpen }: { tour: Tour; onOpen: () => void }) {
   );
 }
 
-function Home({ setView, openTour, tours }: { setView: (v: View) => void; openTour: (id: string) => void; tours: Tour[] }) {
+function Home({ setView, openCatalog, openTour, tours, role }: { setView: (v: View) => void; openCatalog: (modality: Modality) => void; openTour: (id: string) => void; tours: Tour[]; role: Role }) {
   return <main>
     <section className="hero">
-      <div className="hero-image" role="img" aria-label="Templo de Kukulcán en Chichén Itzá al atardecer"/>
+      <div className="hero-image"><ZoneImage zoneId="castillo" priority /></div>
       <div className="hero-overlay"/>
       <div className="hero-copy"><p className="kicker">PATRIMONIO QUE TRASCIENDE DISTANCIAS</p><h1>Explora el mundo<br/>maya, <em>sin fronteras.</em></h1><p>Recorre Chichén Itzá a tu ritmo o prueba una sesión grupal con una guía de ejemplo.</p>
-        <div className="hero-actions"><button className="primary" onClick={() => setView("catalogo")}>Explorar recorridos <Icon name="arrow"/></button><button className="secondary" onClick={() => setView("panel")}>Ver mi progreso</button></div>
-        <div className="live-status"><span className="pulse"/><strong>Plataforma en línea</strong><span>Sesiones grupales simuladas</span></div>
+        <div className="hero-actions"><button className="primary" onClick={() => openCatalog("Todos")}>Explorar recorridos <Icon name="arrow"/></button><button className="secondary" onClick={() => setView(role === "visitante" ? "panel" : role === "guia" ? "guia" : "admin")}>{role === "visitante" ? "Ver mi progreso" : role === "guia" ? "Panel del guía" : "Administración"}</button></div>
+        <div className="live-status"><span className="pulse"/><strong>Prototipo académico</strong><span>Sesiones grupales simuladas</span></div>
       </div>
     </section>
 
     <section className="intro section"><div><p className="kicker dark">DOS FORMAS DE DESCUBRIR</p><h2>Tu recorrido, a tu manera.</h2></div><p className="section-lead">Elige la libertad de explorar a tu ritmo o la riqueza de compartir el camino con otras personas.</p></section>
     <section className="modes section">
-      <article className="mode-card"><div className="number">01</div><div className="mode-icon"><Icon name="route" size={26}/></div><h3>Recorrido individual</h3><p>Avanza a tu propio ritmo, detente en cada detalle y retoma tu progreso cuando quieras.</p><ul><li><Icon name="check" size={16}/> Acceso inmediato</li><li><Icon name="check" size={16}/> Progreso guardado</li><li><Icon name="check" size={16}/> Paradas culturales</li></ul><button className="text-button" onClick={() => setView("catalogo")}>Explorar por mi cuenta <Icon name="arrow" size={17}/></button></article>
-      <article className="mode-card featured"><div className="number">02</div><div className="mode-icon"><Icon name="users" size={26}/></div><h3>Experiencia grupal</h3><p>Conoce la interfaz del guía y explora las paradas de una sesión grupal.</p><ul><li><Icon name="check" size={16}/> Guía especializado</li><li><Icon name="check" size={16}/> Itinerario compartido</li><li><Icon name="check" size={16}/> Sala de demostración</li></ul><button className="text-button" onClick={() => setView("catalogo")}>Ver próximas sesiones <Icon name="arrow" size={17}/></button></article>
+      <article className="mode-card"><div className="mode-icon"><Icon name="route" size={26}/></div><h3>Recorrido individual</h3><p>Explora las paradas a tu ritmo y reanuda tu visita desde este navegador.</p><button className="text-button" onClick={() => openCatalog("Individual")}>Explorar por mi cuenta <Icon name="arrow" size={17}/></button></article>
+      <article className="mode-card featured"><div className="mode-icon"><Icon name="users" size={26}/></div><h3>Experiencia grupal</h3><p>Prueba el itinerario, los avatares y los controles de guía en una sesión simulada.</p><button className="text-button" onClick={() => openCatalog("Grupal")}>Ver recorridos grupales <Icon name="arrow" size={17}/></button></article>
     </section>
 
     <section className="featured-tours section"><div className="section-head"><div><p className="kicker dark">SELECCIÓN DESTACADA</p><h2>Empieza por aquí.</h2></div><button className="outline" onClick={() => setView("catalogo")}>Ver todos los recorridos</button></div>
@@ -143,14 +153,15 @@ function Home({ setView, openTour, tours }: { setView: (v: View) => void; openTo
   </main>;
 }
 
-function Catalog({ tours, zones, selected, select, start }: {
+function Catalog({ tours, zones, selected, select, start, filter, setFilter }: {
   tours: Tour[];
   zones: Zone[];
   selected: Tour | undefined;
   select: (id: string | null) => void;
   start: (id: string) => void;
+  filter: Modality;
+  setFilter: (filter: Modality) => void;
 }) {
-  const [filter, setFilter] = useState("Todos");
   const [query, setQuery] = useState("");
   const [language, setLanguage] = useState("");
   const publicZones = zones.filter(zone => zone.access === "public");
@@ -166,7 +177,7 @@ function Catalog({ tours, zones, selected, select, start }: {
       <div className="filters">
         <div className="search"><input aria-label="Buscar recorridos" placeholder="Buscar recorridos…" value={query} onChange={event => setQuery(event.target.value)} /></div>
         <div className="filter-tabs" role="group" aria-label="Modalidad">
-          {["Todos", "Individual", "Grupal"].map(value => <button className={filter === value ? "active" : ""} aria-pressed={filter === value} onClick={() => setFilter(value)} key={value}>{value}</button>)}
+          {(["Todos", "Individual", "Grupal"] as const).map(value => <button className={filter === value ? "active" : ""} aria-pressed={filter === value} onClick={() => setFilter(value)} key={value}>{value}</button>)}
         </div>
         <select aria-label="Idioma del recorrido" value={language} onChange={event => setLanguage(event.target.value)}><option value="">Todos los idiomas</option><option>Español</option><option>Inglés</option></select>
       </div>
@@ -179,7 +190,7 @@ function Catalog({ tours, zones, selected, select, start }: {
       </div>
       {selected && (
         <Dialog label={selected.title} close={() => select(null)} className="detail-drawer">
-          <div className="drawer-photo" />
+          {zonePhotos[selected.zoneIds[0]] && <div className="drawer-photo"><ZoneImage zoneId={selected.zoneIds[0]} /></div>}
           <p className="kicker dark">{selected.type} · {selected.language}</p>
           <h2>{selected.title}</h2>
           <p>{selected.type === "Grupal" ? "Explora el itinerario y la dinámica de guía en una sesión simulada." : "Visita las paradas del itinerario a tu ritmo."}</p>
@@ -261,10 +272,13 @@ function VirtualTour({ role, tour, zones, progress, visit, leave }: { role: Role
       </div>
       {offline && <div className="offline-banner" role="status"><Icon name="wifi" /><div><b>Desconexión simulada</b><span>El avance se conserva en este navegador. Restablece la conexión para continuar.</span></div></div>}
       <div className="tour-stage">
-        <div className="visual-stage" style={{ backgroundImage: "url('/chichen-hero.png')" }}>
-          <p className="illustration-label">Imagen ilustrativa de El Castillo</p>
-          <div className="zone-label"><small>PARADA {index + 1} DE {itinerary.length}</small><h1>{current.name}</h1><p>{current.description}</p></div>
-          <button className="hotspot one" aria-label="Explorar detalle de la zona" disabled={offline} onClick={() => setFeedback("detail")}>+</button>
+        <div className="visual-stage">
+          <ZoneImage zoneId={current.id} priority />
+          <div className="zone-label">
+            <small>PARADA {index + 1} DE {itinerary.length}</small>
+            <h1>{current.name}</h1><p>{current.description}</p>
+            <button className="outline light-outline zone-detail" disabled={offline} onClick={() => setFeedback("detail")}>Explorar detalle de la zona</button>
+          </div>
         </div>
         <aside className="tour-sidebar" aria-label="Itinerario">
           <div className="route-progress"><span>PROGRESO DEL RECORRIDO</span><b>{Math.round(count * 100 / itinerary.length)} %</b><progress aria-label="Paradas visitadas" value={count} max={itinerary.length} /><small>{count} de {itinerary.length} paradas visitadas</small></div>
@@ -315,6 +329,8 @@ function GuidePanel({ tours, start }: { tours: Tour[]; start: (id: string) => vo
 export default function App() {
   const [view, setView] = useState<View>("inicio");
   const [role, setRole] = useState<Role>("visitante");
+  const [modality, setModality] = useState<Modality>("Todos");
+  const [creditsOpen, setCreditsOpen] = useState(false);
   const [selectedId, select] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [progress, setProgress] = useLocalState<ProgressByTour>("chichen-progress", {});
@@ -331,8 +347,14 @@ export default function App() {
 
   function navigate(next: View) {
     select(null);
+    if (next === "catalogo") setModality("Todos");
     setView(next);
     window.scrollTo(0, 0);
+  }
+
+  function openCatalog(filter: Modality) {
+    navigate("catalogo");
+    setModality(filter);
   }
 
   function changeRole(next: Role) {
@@ -360,15 +382,30 @@ export default function App() {
   return (
     <>
       <Header view={view} navigate={navigate} role={role} changeRole={changeRole} />
-      {view === "inicio" && <Home tours={visibleTours} setView={navigate} openTour={id => { navigate("catalogo"); select(id); }} />}
-      {view === "catalogo" && <Catalog tours={visibleTours} zones={zones} selected={selected} select={select} start={start} />}
+      {view === "inicio" && <Home tours={visibleTours} role={role} setView={navigate} openCatalog={openCatalog} openTour={id => { navigate("catalogo"); select(id); }} />}
+      {view === "catalogo" && <Catalog tours={visibleTours} zones={zones} selected={selected} select={select} start={start} filter={modality} setFilter={setModality} />}
       {view === "panel" && <VisitorPanel tours={visibleTours} progress={progress} start={start} navigate={navigate} />}
       {view === "recorrido" && (active
         ? <VirtualTour key={active.id} tour={active} role={role} zones={zones} progress={progress[progressKey(active.id)] ?? { lastZone: active.zoneIds[0], visited: [] }} visit={id => visit(active.id, id)} leave={() => navigate(role === "visitante" ? "panel" : role === "guia" ? "guia" : "catalogo")} />
         : <main className="page"><h1>Recorrido no disponible</h1><button className="outline" onClick={() => navigate("catalogo")}>Volver al catálogo</button></main>)}
       {view === "guia" && role === "guia" && <GuidePanel tours={visibleTours.filter(tour => tour.type === "Grupal")} start={start} />}
       {view === "admin" && role === "administrador" && <AdminPanel />}
-      <footer><div className="brand inverted"><span className="brand-mark"><Icon name="logo" /></span><span>Chichén Itzá<small>RECORRIDOS VIRTUALES</small></span></div><p>Una experiencia cultural digital para compartir el legado maya.</p><span>Prototipo académico · Sistemas Distribuidos</span></footer>
+      <footer>
+        <div className="brand inverted"><span className="brand-mark"><Icon name="logo" /></span><span>Chichén Itzá<small>RECORRIDOS VIRTUALES</small></span></div>
+        <p>Prototipo académico · Sistemas Distribuidos</p>
+        <button className="photo-credits-button" onClick={() => setCreditsOpen(true)}>Créditos de las fotografías</button>
+      </footer>
+      {creditsOpen && (
+        <Dialog label="Créditos de las fotografías" close={() => setCreditsOpen(false)} className="credits-dialog">
+          <h2>Créditos de las fotografías</h2>
+          <p>Imágenes de Wikimedia Commons, adaptadas a WebP para la web.</p>
+          <ul>{Object.values(zonePhotos).map(photo => photo && (
+            <li key={photo.src}>
+              <a href={photo.source}>{photo.title}</a><span>{photo.author} · {photo.licenseUrl ? <a href={photo.licenseUrl}>{photo.license}</a> : photo.license}</span>
+            </li>
+          ))}</ul>
+        </Dialog>
+      )}
     </>
   );
 }
